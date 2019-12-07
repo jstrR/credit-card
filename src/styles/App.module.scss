@@ -8,3 +8,14 @@ h1 {
   color: red;
   text-align: center;
 }
+
+.form {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+
+  input {
+    max-width: 50%;
+  }
+}
