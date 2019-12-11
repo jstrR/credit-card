@@ -1,33 +1,39 @@
-import React, { useEffect, useState } from "react";
-
+/* eslint-disable react/prop-types */
+import React, { useEffect, useState, useRef } from "react";
 import styles from "../styles/App.module.scss";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-/*const MyTextInput = ({ label, ...props }) => {
-  const [field, meta] = useField(props);
-  field.onChange = e => {
-    //e.target.value.replace(/\D/g, ""); // removes all non-numeric characters
-    console.log(e.target.value);
-    return (field.value = { ...e.target.value });
+const CardFrom = props => {
+  const cardNumber = useRef(null);
+  const cardHolder = useRef(null);
+  const cardExpDate = useRef(null);
+  const cardCvv = useRef(null);
+
+  const formInputRefs = {
+    cardNumber,
+    cardHolder,
+    cardExpDate,
+    cardCvv
   };
 
-  return (
-    <>
-      
-      <input className="" {...field} {...props} />
-      {meta.touched && meta.error ? (
-        <div className="error">{meta.error}</div>
-      ) : null}
-    </>
-  );
-};*/
-
-const CardFrom = props => {
   const [formValues, setFormValues] = useState({});
+
   useEffect(() => {
-    console.log(formValues);
+    props.setFormInputValues(formValues);
   }, [formValues]);
+
+  useEffect(() => {
+    if (
+      props.activeItem &&
+      formInputRefs[props.activeItem] &&
+      formInputRefs[props.activeItem].current &&
+      formInputRefs[props.activeItem].current.name
+    ) {
+      formInputRefs[props.activeItem].current.focus();
+    }
+  }, [props.activeItem]);
+
   return (
     <div>
       <h1>This is CardFrom</h1>
@@ -53,7 +59,7 @@ const CardFrom = props => {
             )
             .test(
               "test-credit-card-expiration-date",
-              "Invalid Expiration Month",
+              "Invalid Month",
               expirationDate => {
                 if (!expirationDate) return false;
                 const [expMonth] = expirationDate.split("/");
@@ -86,12 +92,14 @@ const CardFrom = props => {
         })}
         onSubmit={values => {
           alert(values);
-        }}>
-        {({ setFieldValue }) => (
+        }}
+      >
+        {({ setFieldValue, handleBlur }) => (
           <Form className={styles.form}>
             <label htmlFor={"cardNumber"}>Card Number</label>
             <Field
               name="cardNumber"
+              innerRef={cardNumber}
               type="text"
               onChange={e => {
                 const { value, name } = e.target;
@@ -102,6 +110,13 @@ const CardFrom = props => {
                   [name]: newValue
                 });
               }}
+              onFocus={e => {
+                props.setActiveItem(e.target.name);
+              }}
+              onBlur={e => {
+                handleBlur(e);
+                props.setActiveItem("");
+              }}
             />
             <ErrorMessage name="cardNumber" component="div" />
 
@@ -109,11 +124,19 @@ const CardFrom = props => {
             <Field
               name="cardHolder"
               type="text"
+              innerRef={cardHolder}
               onChange={e => {
                 const { value, name } = e.target;
                 const newValue = value.toUpperCase();
                 setFieldValue("cardHolder", newValue);
                 setFormValues({ ...formValues, [name]: newValue });
+              }}
+              onFocus={e => {
+                props.setActiveItem(e.target.name);
+              }}
+              onBlur={e => {
+                handleBlur(e);
+                props.setActiveItem("");
               }}
             />
             <ErrorMessage name="cardHolder" component="div" />
@@ -122,10 +145,18 @@ const CardFrom = props => {
             <Field
               name="cardExpDate"
               type="text"
+              innerRef={cardExpDate}
               onChange={e => {
                 const { value, name } = e.target;
                 setFieldValue("cardExpDate", value);
                 setFormValues({ ...formValues, [name]: value });
+              }}
+              onFocus={e => {
+                props.setActiveItem(e.target.name);
+              }}
+              onBlur={e => {
+                handleBlur(e);
+                props.setActiveItem("");
               }}
             />
             <ErrorMessage name="cardExpDate" component="div" />
@@ -134,10 +165,18 @@ const CardFrom = props => {
             <Field
               name="cardCvv"
               type="text"
+              innerRef={cardCvv}
               onChange={e => {
                 const { value, name } = e.target;
                 setFieldValue("cardCvv", value);
                 setFormValues({ ...formValues, [name]: value });
+              }}
+              onFocus={e => {
+                props.setActiveItem(e.target.name);
+              }}
+              onBlur={e => {
+                handleBlur(e);
+                props.setActiveItem("");
               }}
             />
             <ErrorMessage name="cardCvv" component="div" />
@@ -151,3 +190,22 @@ const CardFrom = props => {
 };
 
 export default CardFrom;
+
+/*const MyTextInput = ({ label, ...props }) => {
+  const [field, meta] = useField(props);
+  field.onChange = e => {
+    //e.target.value.replace(/\D/g, ""); // removes all non-numeric characters
+    console.log(e.target.value);
+    return (field.value = { ...e.target.value });
+  };
+
+  return (
+    <>
+      
+      <input className="" {...field} {...props} />
+      {meta.touched && meta.error ? (
+        <div className="error">{meta.error}</div>
+      ) : null}
+    </>
+  );
+};*/
