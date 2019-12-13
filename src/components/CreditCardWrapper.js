@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import CardItem from "./CardItem";
 import CardForm from "./CardForm";
-import styles from "../styles/App.module.scss";
+import styles from "../styles/CreditCardWrapper.module.scss";
 
 const CreditCardWrapper = () => {
   const [activeItem, setActiveItem] = useState(null);
-  const [formInputValues, setFormInputValues] = useState(null);
+  const [formInputValues, setFormInputValues] = useState({});
 
   return (
-    <div className={styles.red}>
+    <div className={styles.creditCardWrapper}>
       <CardItem
         setActiveItem={newItem => setActiveItem(newItem)}
         activeItem={activeItem}
@@ -17,9 +17,9 @@ const CreditCardWrapper = () => {
       <CardForm
         activeItem={activeItem}
         setActiveItem={newItem => setActiveItem(newItem)}
-        setFormInputValues={newObjectValues =>
-          setFormInputValues(newObjectValues)
-        }
+        setFormInputValue={newInputValue => {
+          setFormInputValues({ ...formInputValues, ...newInputValue });
+        }}
       />
     </div>
   );

@@ -1,21 +1,9 @@
-.red {
-  font-size: 1rem;
-  text-align: center;
-}
+@import url("https://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600,700|Source+Sans+Pro:400,600,700&display=swap");
 
-h1 {
-  text-align: center;
-}
-
-.active {
-  border: 3px solid black;
-}
-.form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  input {
-    max-width: 50%;
-  }
+body {
+  box-sizing: border-box;
+  background-color: #ddeefc;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 16px;
+  min-height: 75vh;
 }

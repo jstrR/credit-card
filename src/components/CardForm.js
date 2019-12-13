@@ -1,10 +1,11 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState, useRef } from "react";
-import styles from "../styles/App.module.scss";
+import React, { useEffect, useRef } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import InputMask from "react-input-mask";
 import * as Yup from "yup";
+import styles from "../styles/CardForm.module.scss";
 
-const CardFrom = props => {
+const CardFrom = ({ activeItem, setActiveItem, setFormInputValue }) => {
   const cardNumber = useRef(null);
   const cardHolder = useRef(null);
   const cardExpDate = useRef(null);
@@ -17,26 +18,19 @@ const CardFrom = props => {
     cardCvv
   };
 
-  const [formValues, setFormValues] = useState({});
-
-  useEffect(() => {
-    props.setFormInputValues(formValues);
-  }, [formValues]);
-
   useEffect(() => {
     if (
-      props.activeItem &&
-      formInputRefs[props.activeItem] &&
-      formInputRefs[props.activeItem].current &&
-      formInputRefs[props.activeItem].current.name
+      activeItem &&
+      formInputRefs[activeItem] &&
+      formInputRefs[activeItem].current &&
+      formInputRefs[activeItem].current.name
     ) {
-      formInputRefs[props.activeItem].current.focus();
+      formInputRefs[activeItem].current.focus();
     }
-  }, [props.activeItem]);
+  }, [activeItem]);
 
   return (
-    <div>
-      <h1>This is CardFrom</h1>
+    <>
       <Formik
         initialValues={{
           cardNumber: "",
@@ -46,17 +40,21 @@ const CardFrom = props => {
         }}
         validationSchema={Yup.object({
           cardNumber: Yup.string()
-            .required("Card number is required")
-            .matches(/^[0-9]{16}$/, "not Valid"),
+            .required("Card Number is required")
+            .matches(/^[0-9 ]{19}$/, "Not Valid Card Number"),
           cardHolder: Yup.string()
-            .required("Card holder is required")
-            .matches(/^([A-Za-z]{3,})\s([A-Za-z]{3,})/, "not Valid"),
+            .required("Card Holder is required")
+            .matches(
+              /^([A-Za-z]{3,})\s([A-Za-z]{3,})/,
+              "Not Valid Card Holder"
+            ),
           cardExpDate: Yup.string()
             .required("Card Date is required. Example: MM/YY")
             .matches(
               /([0-9]{2})\/([0-9]{2})/,
               "Not a valid expiration date. Example: MM/YY"
             )
+            .max(5, "Maximum 5 characters")
             .test(
               "test-credit-card-expiration-date",
               "Invalid Month",
@@ -95,117 +93,151 @@ const CardFrom = props => {
         }}
       >
         {({ setFieldValue, handleBlur }) => (
-          <Form className={styles.form}>
-            <label htmlFor={"cardNumber"}>Card Number</label>
-            <Field
-              name="cardNumber"
-              innerRef={cardNumber}
-              type="text"
-              onChange={e => {
-                const { value, name } = e.target;
-                const newValue = value.replace(/\D/g, "");
-                setFieldValue("cardNumber", newValue);
-                setFormValues({
-                  ...formValues,
-                  [name]: newValue
-                });
-              }}
-              onFocus={e => {
-                props.setActiveItem(e.target.name);
-              }}
-              onBlur={e => {
-                handleBlur(e);
-                props.setActiveItem("");
-              }}
-            />
-            <ErrorMessage name="cardNumber" component="div" />
+          <Form className={styles.cardForm}>
+            <div className={styles.cardForm__input}>
+              <label htmlFor={"cardNumber"}>Card Number</label>
+              <Field name="cardNumber" id="cardNumber" type="text">
+                {({ field }) => (
+                  <InputMask
+                    {...field}
+                    mask="9999 9999 9999 9999"
+                    maskPlaceholder="#"
+                    ref={cardNumber}
+                    onFocus={e => {
+                      setActiveItem(e.target.name);
+                    }}
+                    onBlur={e => {
+                      handleBlur(e);
+                      setActiveItem("");
+                    }}
+                    onChange={e => {
+                      const { value, name } = e.target;
+                      setFieldValue("cardNumber", value);
+                      setFormInputValue({
+                        [name]: value
+                      });
+                    }}
+                  />
+                )}
+              </Field>
+              <ErrorMessage
+                name="cardNumber"
+                render={msg => (
+                  <div className={styles.cardForm__error}>{msg}</div>
+                )}
+              />
+            </div>
 
-            <label htmlFor={"cardHolder"}>Card Holder</label>
-            <Field
-              name="cardHolder"
-              type="text"
-              innerRef={cardHolder}
-              onChange={e => {
-                const { value, name } = e.target;
-                const newValue = value.toUpperCase();
-                setFieldValue("cardHolder", newValue);
-                setFormValues({ ...formValues, [name]: newValue });
-              }}
-              onFocus={e => {
-                props.setActiveItem(e.target.name);
-              }}
-              onBlur={e => {
-                handleBlur(e);
-                props.setActiveItem("");
-              }}
-            />
-            <ErrorMessage name="cardHolder" component="div" />
+            <div className={styles.cardForm__input}>
+              <label htmlFor={"cardHolder"}>Card Holder</label>
+              <Field
+                name="cardHolder"
+                id="cardHolder"
+                type="text"
+                innerRef={cardHolder}
+                onChange={e => {
+                  const { value, name } = e.target;
+                  const newValue = value.toUpperCase();
+                  setFieldValue("cardHolder", newValue);
+                  setFormInputValue({
+                    [name]: value
+                  });
+                }}
+                onFocus={e => {
+                  setActiveItem(e.target.name);
+                }}
+                onBlur={e => {
+                  handleBlur(e);
+                  setActiveItem("");
+                }}
+              />
+              <ErrorMessage
+                name="cardHolder"
+                render={msg => (
+                  <div className={styles.cardForm__error}>{msg}</div>
+                )}
+              />
+            </div>
 
-            <label htmlFor={"cardExpDate"}>Expiration Date</label>
-            <Field
-              name="cardExpDate"
-              type="text"
-              innerRef={cardExpDate}
-              onChange={e => {
-                const { value, name } = e.target;
-                setFieldValue("cardExpDate", value);
-                setFormValues({ ...formValues, [name]: value });
-              }}
-              onFocus={e => {
-                props.setActiveItem(e.target.name);
-              }}
-              onBlur={e => {
-                handleBlur(e);
-                props.setActiveItem("");
-              }}
-            />
-            <ErrorMessage name="cardExpDate" component="div" />
+            <div className={styles.cardForm__row}>
+              <div className={styles.cardForm__col}>
+                <div className={styles.cardForm__input}>
+                  <label htmlFor={"cardExpDate"}>Expiration Date</label>
+                  <Field name="cardExpDate" id="cardExpDate" type="text">
+                    {({ field }) => (
+                      <InputMask
+                        {...field}
+                        mask="99/99"
+                        maskPlaceholder="-"
+                        placeholder="MM/YY"
+                        ref={cardExpDate}
+                        onFocus={e => {
+                          setActiveItem(e.target.name);
+                        }}
+                        onBlur={e => {
+                          handleBlur(e);
+                          setActiveItem("");
+                        }}
+                        onChange={e => {
+                          const { value, name } = e.target;
+                          setFieldValue("cardExpDate", value);
+                          setFormInputValue({
+                            [name]: value
+                          });
+                        }}
+                      />
+                    )}
+                  </Field>
+                  <ErrorMessage
+                    name="cardExpDate"
+                    render={msg => (
+                      <div className={styles.cardForm__error}>{msg}</div>
+                    )}
+                  />
+                </div>
+              </div>
 
-            <label htmlFor={"cardCvv"}>Card Cvv</label>
-            <Field
-              name="cardCvv"
-              type="text"
-              innerRef={cardCvv}
-              onChange={e => {
-                const { value, name } = e.target;
-                setFieldValue("cardCvv", value);
-                setFormValues({ ...formValues, [name]: value });
-              }}
-              onFocus={e => {
-                props.setActiveItem(e.target.name);
-              }}
-              onBlur={e => {
-                handleBlur(e);
-                props.setActiveItem("");
-              }}
-            />
-            <ErrorMessage name="cardCvv" component="div" />
+              <div className={styles.cardForm__col}>
+                <div className={styles.cardForm__input}>
+                  <label htmlFor={"cardCvv"}>Card Cvv</label>
+                  <Field
+                    name="cardCvv"
+                    id="cardCvv"
+                    type="text"
+                    innerRef={cardCvv}
+                    onChange={e => {
+                      const { value, name } = e.target;
+                      setFieldValue("cardCvv", value);
+                      setFormInputValue({
+                        [name]: value
+                      });
+                    }}
+                    onFocus={e => {
+                      setActiveItem(e.target.name);
+                    }}
+                    onBlur={e => {
+                      handleBlur(e);
+                      setActiveItem("");
+                    }}
+                  />
+                  <ErrorMessage
+                    name="cardCvv"
+                    render={msg => (
+                      <div className={styles.cardForm__error}>{msg}</div>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
 
-            <button type="submit">Submit</button>
+            <button type="submit" className={styles.cardForm__submit}>
+              Submit
+            </button>
           </Form>
         )}
       </Formik>
-    </div>
+    </>
   );
 };
 
 export default CardFrom;
-
-/*const MyTextInput = ({ label, ...props }) => {
-  const [field, meta] = useField(props);
-  field.onChange = e => {
-    //e.target.value.replace(/\D/g, ""); // removes all non-numeric characters
-    console.log(e.target.value);
-    return (field.value = { ...e.target.value });
-  };
-
-  return (
-    <>
-      
-      <input className="" {...field} {...props} />
-      {meta.touched && meta.error ? (
-        <div className="error">{meta.error}</div>
-      ) : null}
-    </>
-  );
-};*/
